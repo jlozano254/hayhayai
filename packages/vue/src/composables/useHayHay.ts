@@ -1,4 +1,4 @@
-import { inject, ref, readonly, type InjectionKey } from 'vue'
+import { inject, ref, readonly, watch, effectScope, type InjectionKey } from 'vue'
 import { type HayHayRuntime, type HHActionOptions, type AssistantReply, type HHMessage, type HayHayConfig } from '@jlozano254/hayhayai-core'
 
 export const hayHayRuntimeKey: InjectionKey<HayHayRuntime> = Symbol('hayhayai-runtime')
@@ -29,9 +29,68 @@ export interface ChatMessage {
   timestamp: number
 }
 
+// ─── localStorage persistence ─────────────────────────────────────────────────
+
+const DEFAULT_STORAGE_KEY = 'hayhayai-messages'
+const DEFAULT_MAX_MESSAGES = 60
+
+function isBrowser(): boolean {
+  return typeof window !== 'undefined' && typeof localStorage !== 'undefined'
+}
+
+function loadFromStorage(key: string): ChatMessage[] {
+  if (!isBrowser()) return []
+  try {
+    const raw = localStorage.getItem(key)
+    return raw ? (JSON.parse(raw) as ChatMessage[]) : []
+  } catch {
+    return []
+  }
+}
+
+function saveToStorage(key: string, messages: ChatMessage[], max: number): void {
+  if (!isBrowser()) return
+  try {
+    localStorage.setItem(key, JSON.stringify(messages.slice(-max)))
+  } catch {}
+}
+
+// ─── Module-level shared state ────────────────────────────────────────────────
+
 const isOpenRef = ref(false)
 const isLoadingRef = ref(false)
-const messagesRef = ref<ChatMessage[]>([])
+const messagesRef = ref<ChatMessage[]>(loadFromStorage(DEFAULT_STORAGE_KEY))
+
+let _persistenceActive = false
+let _activeStorageKey = DEFAULT_STORAGE_KEY
+
+/**
+ * Activate localStorage persistence. Called once by the plugin install.
+ * Uses a detached effectScope so the watcher is never stopped by component unmount.
+ */
+export function activatePersistence(config: HayHayConfig): void {
+  if (_persistenceActive) return
+
+  const persistOpt = config.persist ?? true
+  if (!persistOpt) return
+
+  const key = typeof persistOpt === 'object' ? (persistOpt.key ?? DEFAULT_STORAGE_KEY) : DEFAULT_STORAGE_KEY
+  const max =
+    typeof persistOpt === 'object' ? (persistOpt.maxMessages ?? DEFAULT_MAX_MESSAGES) : DEFAULT_MAX_MESSAGES
+
+  if (key !== DEFAULT_STORAGE_KEY) {
+    messagesRef.value = loadFromStorage(key)
+  }
+
+  _activeStorageKey = key
+
+  const scope = effectScope(true)
+  scope.run(() => {
+    watch(messagesRef, (msgs) => saveToStorage(key, msgs, max), { deep: true })
+  })
+
+  _persistenceActive = true
+}
 
 export function useHayHay(): HayHayComposable {
   const runtime = inject(hayHayRuntimeKey)
@@ -164,6 +223,11 @@ export function useHayHay(): HayHayComposable {
   function clearSession() {
     runtime.clearSession()
     messagesRef.value = []
+    if (isBrowser()) {
+      try {
+        localStorage.removeItem(_activeStorageKey)
+      } catch {}
+    }
   }
 
   return {

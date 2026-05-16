@@ -122,4 +122,14 @@ export interface HayHayConfig {
   }>
   /** Custom Vue components keyed by block type (e.g. { 'market-card': MarketCard }) */
   blockComponents?: Record<string, unknown>
+  /**
+   * Persist chat messages to localStorage so they survive page refreshes.
+   * Defaults to true. Pass `{ key, maxMessages }` to customise storage.
+   */
+  persist?:
+    | boolean
+    | {
+        key?: string
+        maxMessages?: number
+      }
 }
