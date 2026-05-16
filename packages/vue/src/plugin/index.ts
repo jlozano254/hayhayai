@@ -1,0 +1,12 @@
+import type { App } from 'vue'
+import { createRuntime, type HayHayConfig } from '@hayhayai/core'
+import { hayHayRuntimeKey } from '../composables/useHayHay.js'
+
+export function createHayHayPlugin(config: HayHayConfig) {
+  return {
+    install(app: App) {
+      const runtime = createRuntime(config)
+      app.provide(hayHayRuntimeKey, runtime)
+    },
+  }
+}

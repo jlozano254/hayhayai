@@ -1,0 +1,15 @@
+{
+  "name": "hayhayai",
+  "private": true,
+  "description": "Monorepo for the hayhayai framework-agnostic AI chat layer",
+  "scripts": {
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "lint": "pnpm -r lint",
+    "dev": "pnpm -r --parallel dev"
+  },
+  "engines": {
+    "node": ">=18",
+    "pnpm": ">=9"
+  }
+}
