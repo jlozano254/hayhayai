@@ -103,7 +103,41 @@ export function useHayHay(): HayHayComposable {
   }
 
   async function executeAction(name: string, params: Record<string, unknown> = {}) {
-    return runtime.execute(name, params)
+    isLoadingRef.value = true
+
+    try {
+      const result = await runtime.execute(name, params)
+
+      if (result.success) {
+        messagesRef.value.push({
+          id: `${Date.now()}-action`,
+          role: 'assistant',
+          content: `Action completed: ${name}`,
+          reply: {
+            message: `Action completed: ${name}`,
+            blocks: [{ type: 'status', title: 'Done', content: result.result !== undefined ? String(result.result) : `Action "${name}" executed successfully.` }],
+            suggestedActions: [],
+          },
+          timestamp: Date.now(),
+        })
+      } else {
+        messagesRef.value.push({
+          id: `${Date.now()}-action-err`,
+          role: 'assistant',
+          content: result.error ?? 'Action failed',
+          reply: {
+            message: result.error ?? 'Action failed',
+            blocks: [{ type: 'error', content: result.error ?? 'Action failed' }],
+            suggestedActions: [],
+          },
+          timestamp: Date.now(),
+        })
+      }
+
+      return result
+    } finally {
+      isLoadingRef.value = false
+    }
   }
 
   function clearSession() {

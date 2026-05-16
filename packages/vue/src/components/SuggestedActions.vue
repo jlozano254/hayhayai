@@ -13,7 +13,7 @@ const { executeAction } = useHayHay()
       v-for="(sa, i) in actions"
       :key="i"
       class="hh-suggested-action-btn"
-      @click="executeAction(sa.action.name, sa.action as Record<string, unknown>)"
+      @click="executeAction(sa.action.name, sa.action.params ?? {})"
     >
       {{ sa.label }}
     </button>
