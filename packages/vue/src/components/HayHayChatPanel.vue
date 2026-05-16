@@ -10,7 +10,7 @@ import ConfirmationBlock from './blocks/ConfirmationBlock.vue'
 import ErrorBlock from './blocks/ErrorBlock.vue'
 import ItemListBlock from './blocks/ItemListBlock.vue'
 
-const { isOpen, isLoading, messages, close, send, executeAction } = useHayHay()
+const { isOpen, isLoading, messages, close, send, executeAction, addUserMessage } = useHayHay()
 const config = inject(hayHayConfigKey)
 
 const inputText = ref('')
@@ -40,8 +40,9 @@ function handleKeydown(e: KeyboardEvent) {
   }
 }
 
-function sendQuickPrompt(qp: { text?: string; action?: { name: string; params?: Record<string, unknown> } }) {
+function sendQuickPrompt(qp: { label: string; icon?: string; text?: string; action?: { name: string; params?: Record<string, unknown> } }) {
   if (qp.action) {
+    addUserMessage(qp.label)
     executeAction(qp.action.name, qp.action.params ?? {})
   } else if (qp.text) {
     inputText.value = qp.text
@@ -142,21 +143,34 @@ function blockComponent(type: string) {
       </div>
 
       <footer class="hh-panel-footer">
-        <textarea
-          v-model="inputText"
-          class="hh-input"
-          placeholder="Ask me anything…"
-          rows="2"
-          :disabled="isLoading as boolean"
-          @keydown="handleKeydown"
-        />
-        <button
-          class="hh-send-btn"
-          :disabled="!inputText.trim() || (isLoading as boolean)"
-          @click="handleSend"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="m22 2-11 11M22 2 15 22l-4-9-9-4 20-7z"/></svg>
-        </button>
+        <div v-if="config?.quickPrompts?.length && (messages as ChatMessage[]).length" class="hh-quick-prompts-bar">
+          <button
+            v-for="(qp, i) in config.quickPrompts"
+            :key="i"
+            class="hh-quick-prompt-bar-btn"
+            @click="sendQuickPrompt(qp)"
+          >
+            <span v-if="qp.icon" class="hh-quick-prompt-icon">{{ qp.icon }}</span>
+            {{ qp.label }}
+          </button>
+        </div>
+        <div class="hh-input-row">
+          <textarea
+            v-model="inputText"
+            class="hh-input"
+            placeholder="Ask me anything…"
+            rows="2"
+            :disabled="isLoading as boolean"
+            @keydown="handleKeydown"
+          />
+          <button
+            class="hh-send-btn"
+            :disabled="!inputText.trim() || (isLoading as boolean)"
+            @click="handleSend"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="m22 2-11 11M22 2 15 22l-4-9-9-4 20-7z"/></svg>
+          </button>
+        </div>
       </footer>
     </div>
   </Transition>
@@ -357,12 +371,50 @@ function blockComponent(type: string) {
 /* Footer */
 .hh-panel-footer {
   display: flex;
-  align-items: flex-end;
-  gap: 8px;
-  padding: 10px 12px;
+  flex-direction: column;
+  gap: 0;
   border-top: 1px solid #e5e7eb;
   background: #fff;
   flex-shrink: 0;
+}
+
+/* Persistent quick-prompts bar (shown when conversation has messages) */
+.hh-quick-prompts-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 12px 6px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.hh-quick-prompt-bar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #fff7ed;
+  border: 1.5px solid #fed7aa;
+  color: #c2410c;
+  border-radius: 999px;
+  padding: 4px 11px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.hh-quick-prompt-bar-btn:hover {
+  background: #f97316;
+  border-color: #f97316;
+  color: #fff;
+}
+
+.hh-input-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 10px 12px;
 }
 
 .hh-input {

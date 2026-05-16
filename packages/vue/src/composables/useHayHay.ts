@@ -12,6 +12,7 @@ export interface HayHayComposable {
   close: () => void
   toggle: () => void
   send: (message: string) => Promise<AssistantReply | null>
+  addUserMessage: (content: string) => void
   registerAction: (
     name: string,
     handler: (params: Record<string, unknown>) => Promise<unknown>,
@@ -111,6 +112,15 @@ export function useHayHay(): HayHayComposable {
     isOpenRef.value = !isOpenRef.value
   }
 
+  function addUserMessage(content: string) {
+    messagesRef.value.push({
+      id: `${Date.now()}-user`,
+      role: 'user',
+      content,
+      timestamp: Date.now(),
+    })
+  }
+
   async function send(message: string): Promise<AssistantReply | null> {
     if (isLoadingRef.value) {
       return null
@@ -176,6 +186,7 @@ export function useHayHay(): HayHayComposable {
           : null
 
         if (hhBlocks && hhBlocks.length > 0) {
+          const suggestedActions = Array.isArray(actionData?.suggestedActions) ? actionData.suggestedActions : []
           messagesRef.value.push({
             id: `${Date.now()}-action`,
             role: 'assistant',
@@ -183,7 +194,7 @@ export function useHayHay(): HayHayComposable {
             reply: {
               message: '',
               blocks: hhBlocks,
-              suggestedActions: [],
+              suggestedActions,
             },
             timestamp: Date.now(),
           })
@@ -238,6 +249,7 @@ export function useHayHay(): HayHayComposable {
     close,
     toggle,
     send,
+    addUserMessage,
     registerAction,
     executeAction,
     clearSession,

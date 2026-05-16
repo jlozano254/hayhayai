@@ -4,7 +4,12 @@ import { useHayHay } from '../composables/useHayHay.js'
 
 defineProps<{ actions: SuggestedAction[] }>()
 
-const { executeAction } = useHayHay()
+const { executeAction, addUserMessage } = useHayHay()
+
+function handleAction(sa: SuggestedAction) {
+    addUserMessage(sa.label)
+    executeAction(sa.action.name, sa.action.params ?? {})
+}
 </script>
 
 <template>
@@ -13,7 +18,7 @@ const { executeAction } = useHayHay()
       v-for="(sa, i) in actions"
       :key="i"
       class="hh-suggested-action-btn"
-      @click="executeAction(sa.action.name, sa.action.params ?? {})"
+      @click="handleAction(sa)"
     >
       {{ sa.label }}
     </button>
