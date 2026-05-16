@@ -20,7 +20,7 @@ class ChatRequest extends FormRequest
             'pageContext.page'            => ['required', 'array'],
             'pageContext.page.url'        => ['required', 'string'],
             'pageContext.page.title'      => ['required', 'string'],
-            'pageContext.components'      => ['required', 'array'],
+            'pageContext.components'      => ['present', 'array'],
             'conversation'               => ['sometimes', 'array'],
             'conversation.*.role'        => ['required_with:conversation', 'string', 'in:user,assistant'],
             'conversation.*.content'     => ['required_with:conversation', 'string'],

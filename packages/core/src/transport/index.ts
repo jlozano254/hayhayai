@@ -28,11 +28,21 @@ export class Transport {
       return defaultMockReply
     }
 
+    const csrfToken =
+      (typeof document !== 'undefined' &&
+        (document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ||
+          document.cookie
+            .split('; ')
+            .find((c) => c.startsWith('XSRF-TOKEN='))
+            ?.split('=')[1])) ||
+      undefined
+
     const response = await fetch(this.config.endpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
+        ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {}),
         ...this.config.headers,
       },
       body: JSON.stringify(request),

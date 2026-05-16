@@ -6,6 +6,7 @@
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "style": "./dist/vue.css",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -13,26 +14,37 @@
       "require": "./dist/index.cjs"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "vite build",
     "dev": "vite build --watch",
     "lint": "tsc --noEmit"
   },
-  "keywords": ["ai", "chat", "vue", "hayhayai", "inertia"],
+  "keywords": [
+    "ai",
+    "chat",
+    "vue",
+    "hayhayai",
+    "inertia"
+  ],
   "license": "MIT",
   "peerDependencies": {
     "vue": "^3.0.0"
   },
   "peerDependenciesMeta": {
-    "@inertiajs/vue3": { "optional": true }
+    "@inertiajs/vue3": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@jlozano254/hayhayai-core": "workspace:*",
+    "@vitejs/plugin-vue": "^5.2.3",
     "typescript": "^5.8.3",
     "vite": "^6.3.5",
-    "vue": "^3.5.13",
-    "@vitejs/plugin-vue": "^5.2.3"
+    "vite-plugin-css-injected-by-js": "^5.0.1",
+    "vue": "^3.5.13"
   },
   "dependencies": {
     "@jlozano254/hayhayai-core": "workspace:*"
