@@ -85,6 +85,27 @@ function itemProps(item: Record<string, unknown>): Record<string, unknown> {
   display: block;
   text-decoration: none;
   color: inherit;
+  width: 200px;
+}
+
+/* Compact CardPreview inside chat — override Tailwind fixed dimensions */
+.hh-item-list-link > div {
+  width: 200px !important;
+  min-width: 200px !important;
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+/* Reduce the image section height */
+.hh-item-list-link > div > div:first-child,
+.hh-item-list-link > div > div:first-child > div,
+.hh-item-list-link > div > div:first-child img {
+  height: 120px !important;
+}
+
+/* Tighten the info section padding */
+.hh-item-list-link > div > div:last-child {
+  padding: 10px 12px !important;
 }
 
 .hh-item-list-fallback {
