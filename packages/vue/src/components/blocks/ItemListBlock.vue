@@ -19,7 +19,7 @@ const resolvedComponent = computed((): Component | null => {
 <template>
   <div class="hh-item-list">
     <p v-if="title" class="hh-item-list-title">{{ title }}</p>
-    <div v-if="resolvedComponent" class="hh-item-list-grid">
+    <div v-if="resolvedComponent" class="hh-item-list-scroll">
       <component
         v-for="(item, i) in items"
         :key="(item.id as string) || i"
@@ -46,10 +46,32 @@ const resolvedComponent = computed((): Component | null => {
   letter-spacing: 0.04em;
 }
 
-.hh-item-list-grid {
+.hh-item-list-scroll {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  flex-direction: row;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+.hh-item-list-scroll > * {
+  scroll-snap-align: start;
+  flex-shrink: 0;
+}
+
+.hh-item-list-scroll::-webkit-scrollbar {
+  height: 4px;
+}
+
+.hh-item-list-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.hh-item-list-scroll::-webkit-scrollbar-thumb {
+  background: #e5e7eb;
+  border-radius: 999px;
 }
 
 .hh-item-list-fallback {
