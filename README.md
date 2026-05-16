@@ -105,6 +105,31 @@ pnpm build
 pnpm test
 ```
 
+## Copilot Skill
+
+Install the **hayhayai-development** skill to get AI guidance on annotations, actions, blocks, and persistence directly in your editor:
+
+```json
+// skills-lock.json
+{
+    "version": 1,
+    "skills": {
+        "hayhayai-development": {
+            "source": "jlozano254/hayhayai",
+            "sourceType": "github"
+        }
+    }
+}
+```
+
+Or if you use [Laravel Boost](https://laravelboost.com):
+
+```bash
+boost skill add jlozano254/hayhayai
+```
+
+The skill activates automatically whenever you work with `data-hh-*` annotations, `useHayHay()`, action registration, or block components.
+
 ## License
 
 MIT
