@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { SuggestedAction } from '@hayhayai/core'
+import type { SuggestedAction } from '@jlozano254/hayhayai-core'
 import { useHayHay } from '../composables/useHayHay.js'
 
 defineProps<{ actions: SuggestedAction[] }>()

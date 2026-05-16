@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { SuggestedAction } from '@hayhayai/core'
+import type { SuggestedAction } from '@jlozano254/hayhayai-core'
 
 defineProps<{ message: string; title?: string; action?: SuggestedAction }>()
 const emit = defineEmits<{ confirm: []; cancel: [] }>()

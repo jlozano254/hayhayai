@@ -8,8 +8,8 @@ hayhayai adds a semantic annotation layer on top of existing web apps so an AI c
 
 | Package | Registry | Description |
 |---|---|---|
-| [`@hayhayai/core`](./packages/core) | npm | Framework-agnostic runtime: DOM scanner, action registry, transport |
-| [`@hayhayai/vue`](./packages/vue) | npm | Vue 3 plugin, chat panel, launcher, composables |
+| [`@jlozano254/hayhayai-core`](./packages/core) | npm | Framework-agnostic runtime: DOM scanner, action registry, transport |
+| [`@jlozano254/hayhayai-vue`](./packages/vue) | npm | Vue 3 plugin, chat panel, launcher, composables |
 | [`hayhayai/laravel`](./packages/laravel) | Packagist | Laravel service provider, chat endpoint, LLM orchestration |
 
 ## Quick start (Vue + Laravel)
@@ -17,7 +17,7 @@ hayhayai adds a semantic annotation layer on top of existing web apps so an AI c
 ### 1. Install the npm packages
 
 ```bash
-npm install @hayhayai/core @hayhayai/vue
+npm install @jlozano254/hayhayai-core @jlozano254/hayhayai-vue
 ```
 
 ### 2. Install the Laravel package
@@ -37,7 +37,7 @@ HAYHAYAI_OPENAI_API_KEY=sk-...
 
 ```ts
 // resources/js/app.js
-import { createHayHayPlugin } from '@hayhayai/vue'
+import { createHayHayPlugin } from '@jlozano254/hayhayai-vue'
 
 createApp(App)
   .use(createHayHayPlugin({ endpoint: '/hayhay/chat' }))

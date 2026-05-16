@@ -1,5 +1,5 @@
 {
-  "name": "@hayhayai/core",
+  "name": "@jlozano254/hayhayai-core",
   "version": "0.1.0",
   "description": "Framework-agnostic core runtime for hayhayai — semantic annotations, action registry, and AI chat transport",
   "type": "module",

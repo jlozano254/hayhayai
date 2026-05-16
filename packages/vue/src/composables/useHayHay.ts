@@ -1,5 +1,5 @@
 import { inject, ref, readonly, type InjectionKey } from 'vue'
-import { type HayHayRuntime, type HHActionOptions, type AssistantReply, type HHMessage } from '@hayhayai/core'
+import { type HayHayRuntime, type HHActionOptions, type AssistantReply, type HHMessage } from '@jlozano254/hayhayai-core'
 
 export const hayHayRuntimeKey: InjectionKey<HayHayRuntime> = Symbol('hayhayai-runtime')
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import type { ChatBlock } from '@hayhayai/core'
+import type { ChatBlock } from '@jlozano254/hayhayai-core'
 import { useHayHay, type ChatMessage } from '../composables/useHayHay.js'
 import SuggestedActions from './SuggestedActions.vue'
 import TextBlock from './blocks/TextBlock.vue'

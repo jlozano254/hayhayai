@@ -1,4 +1,4 @@
-import type { HayHayRuntime } from '@hayhayai/core'
+import type { HayHayRuntime } from '@jlozano254/hayhayai-core'
 
 /**
  * Re-scans the DOM after each Inertia page navigation if @inertiajs/vue3 is present.

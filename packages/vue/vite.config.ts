@@ -12,11 +12,11 @@ export default defineConfig({
       formats: ['es', 'cjs'],
     },
     rollupOptions: {
-      external: ['vue', '@hayhayai/core', '@inertiajs/vue3'],
+      external: ['vue', '@jlozano254/hayhayai-core', '@inertiajs/vue3'],
       output: {
         globals: {
           vue: 'Vue',
-          '@hayhayai/core': 'HayHayCore',
+          '@jlozano254/hayhayai-core': 'HayHayCore',
         },
       },
     },
