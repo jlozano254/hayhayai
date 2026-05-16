@@ -19,3 +19,35 @@ const { executeAction } = useHayHay()
     </button>
   </div>
 </template>
+
+<style>
+.hh-suggested-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.hh-suggested-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  background: #fff7ed;
+  color: #c2410c;
+  border: 1.5px solid #fed7aa;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: system-ui, -apple-system, sans-serif;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.hh-suggested-action-btn:hover {
+  background: #f97316;
+  border-color: #f97316;
+  color: #fff;
+}
+</style>

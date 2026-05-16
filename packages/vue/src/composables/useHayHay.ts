@@ -110,17 +110,37 @@ export function useHayHay(): HayHayComposable {
       const result = await runtime.execute(name, params)
 
       if (result.success) {
-        messagesRef.value.push({
-          id: `${Date.now()}-action`,
-          role: 'assistant',
-          content: `Action completed: ${name}`,
-          reply: {
-            message: `Action completed: ${name}`,
-            blocks: [{ type: 'status', title: 'Done', content: result.result !== undefined ? String(result.result) : `Action "${name}" executed successfully.` }],
-            suggestedActions: [],
-          },
-          timestamp: Date.now(),
-        })
+        // If the action returned custom blocks, render them directly
+        const actionData = result.result as Record<string, unknown> | null
+        const hhBlocks = actionData && typeof actionData === 'object' && Array.isArray(actionData.hhBlocks)
+          ? actionData.hhBlocks
+          : null
+
+        if (hhBlocks && hhBlocks.length > 0) {
+          messagesRef.value.push({
+            id: `${Date.now()}-action`,
+            role: 'assistant',
+            content: '',
+            reply: {
+              message: '',
+              blocks: hhBlocks,
+              suggestedActions: [],
+            },
+            timestamp: Date.now(),
+          })
+        } else if (!actionData?.silent) {
+          messagesRef.value.push({
+            id: `${Date.now()}-action`,
+            role: 'assistant',
+            content: `Action completed: ${name}`,
+            reply: {
+              message: `Action completed: ${name}`,
+              blocks: [{ type: 'status', title: 'Done', content: result.result !== undefined && !hhBlocks ? String(result.result) : `Action "${name}" executed successfully.` }],
+              suggestedActions: [],
+            },
+            timestamp: Date.now(),
+          })
+        }
       } else {
         messagesRef.value.push({
           id: `${Date.now()}-action-err`,

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, inject } from 'vue'
+import { ref, inject, watch, nextTick } from 'vue'
 import type { ChatBlock } from '@jlozano254/hayhayai-core'
 import { useHayHay, type ChatMessage, hayHayConfigKey } from '../composables/useHayHay.js'
 import SuggestedActions from './SuggestedActions.vue'
@@ -8,12 +8,23 @@ import ListBlock from './blocks/ListBlock.vue'
 import StatusBlock from './blocks/StatusBlock.vue'
 import ConfirmationBlock from './blocks/ConfirmationBlock.vue'
 import ErrorBlock from './blocks/ErrorBlock.vue'
+import ItemListBlock from './blocks/ItemListBlock.vue'
 
-const { isOpen, isLoading, messages, close, send } = useHayHay()
+const { isOpen, isLoading, messages, close, send, executeAction } = useHayHay()
 const config = inject(hayHayConfigKey)
 
 const inputText = ref('')
 const isFullscreen = ref(false)
+const messagesEl = ref<HTMLElement | null>(null)
+
+async function scrollToBottom() {
+  await nextTick()
+  if (messagesEl.value) {
+    messagesEl.value.scrollTop = messagesEl.value.scrollHeight
+  }
+}
+
+watch([messages, isLoading], scrollToBottom, { deep: true })
 
 async function handleSend() {
   const text = inputText.value.trim()
@@ -29,9 +40,13 @@ function handleKeydown(e: KeyboardEvent) {
   }
 }
 
-function sendQuickPrompt(text: string) {
-  inputText.value = text
-  handleSend()
+function sendQuickPrompt(qp: { text?: string; action?: { name: string; params?: Record<string, unknown> } }) {
+  if (qp.action) {
+    executeAction(qp.action.name, qp.action.params ?? {})
+  } else if (qp.text) {
+    inputText.value = qp.text
+    handleSend()
+  }
 }
 
 function blockComponent(type: string) {
@@ -42,6 +57,7 @@ function blockComponent(type: string) {
     status: StatusBlock,
     confirmation: ConfirmationBlock,
     error: ErrorBlock,
+    'item-list': ItemListBlock,
   }
   return map[type] ?? TextBlock
 }
@@ -90,7 +106,7 @@ function blockComponent(type: string) {
               v-for="(qp, i) in config.quickPrompts"
               :key="i"
               class="hh-quick-prompt-btn"
-              @click="sendQuickPrompt(qp.text)"
+              @click="sendQuickPrompt(qp)"
             >
               <span v-if="qp.icon" class="hh-quick-prompt-icon">{{ qp.icon }}</span>
               {{ qp.label }}
@@ -104,7 +120,7 @@ function blockComponent(type: string) {
           class="hh-message"
           :data-role="msg.role"
         >
-          <p class="hh-message-text">{{ msg.content }}</p>
+          <p v-if="msg.content" class="hh-message-text">{{ msg.content }}</p>
 
           <template v-if="msg.role === 'assistant' && msg.reply">
             <component

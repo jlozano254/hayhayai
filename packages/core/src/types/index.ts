@@ -61,6 +61,7 @@ export type ChatBlockType =
   | 'status'
   | 'list'
   | 'parsed-list'
+  | 'item-list'
   | 'cart-preview'
   | 'recommendation'
   | 'missing-item'
@@ -111,5 +112,14 @@ export interface HayHayConfig {
   headers?: Record<string, string>
   mock?: boolean | (() => Promise<AssistantReply>)
   /** Quick prompt buttons shown in the empty chat state */
-  quickPrompts?: Array<{ label: string; text: string; icon?: string }>
+  quickPrompts?: Array<{
+    label: string
+    icon?: string
+    /** Send this text as a chat message (goes through AI) */
+    text?: string
+    /** Directly execute this action (bypasses AI) */
+    action?: { name: string; params?: Record<string, unknown> }
+  }>
+  /** Custom Vue components keyed by block type (e.g. { 'market-card': MarketCard }) */
+  blockComponents?: Record<string, unknown>
 }
