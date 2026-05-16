@@ -110,4 +110,6 @@ export interface HayHayConfig {
   debug?: boolean
   headers?: Record<string, string>
   mock?: boolean | (() => Promise<AssistantReply>)
+  /** Quick prompt buttons shown in the empty chat state */
+  quickPrompts?: Array<{ label: string; text: string; icon?: string }>
 }

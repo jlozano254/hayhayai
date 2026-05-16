@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, inject } from 'vue'
 import type { ChatBlock } from '@jlozano254/hayhayai-core'
-import { useHayHay, type ChatMessage } from '../composables/useHayHay.js'
+import { useHayHay, type ChatMessage, hayHayConfigKey } from '../composables/useHayHay.js'
 import SuggestedActions from './SuggestedActions.vue'
 import TextBlock from './blocks/TextBlock.vue'
 import ListBlock from './blocks/ListBlock.vue'
@@ -10,8 +10,10 @@ import ConfirmationBlock from './blocks/ConfirmationBlock.vue'
 import ErrorBlock from './blocks/ErrorBlock.vue'
 
 const { isOpen, isLoading, messages, close, send } = useHayHay()
+const config = inject(hayHayConfigKey)
 
 const inputText = ref('')
+const isFullscreen = ref(false)
 
 async function handleSend() {
   const text = inputText.value.trim()
@@ -25,6 +27,11 @@ function handleKeydown(e: KeyboardEvent) {
     e.preventDefault()
     handleSend()
   }
+}
+
+function sendQuickPrompt(text: string) {
+  inputText.value = text
+  handleSend()
 }
 
 function blockComponent(type: string) {
@@ -42,13 +49,55 @@ function blockComponent(type: string) {
 
 <template>
   <Transition name="hh-panel">
-    <div v-if="isOpen" class="hh-panel" role="dialog" aria-label="AI Assistant" aria-modal="true">
+    <div
+      v-if="isOpen"
+      class="hh-panel"
+      :class="{ 'hh-panel--fullscreen': isFullscreen }"
+      role="dialog"
+      aria-label="AI Assistant"
+      aria-modal="true"
+    >
       <header class="hh-panel-header">
-        <span class="hh-panel-title">AI Assistant</span>
-        <button class="hh-panel-close" aria-label="Close" @click="close">✕</button>
+        <span class="hh-panel-title">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16" style="opacity:.85"><path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/></svg>
+          AI Assistant
+        </span>
+        <div class="hh-panel-actions">
+          <button
+            class="hh-panel-icon-btn"
+            :aria-label="isFullscreen ? 'Exit fullscreen' : 'Expand to fullscreen'"
+            :title="isFullscreen ? 'Exit fullscreen' : 'Expand'"
+            @click="isFullscreen = !isFullscreen"
+          >
+            <svg v-if="!isFullscreen" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+            <svg v-else xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
+          </button>
+          <button class="hh-panel-icon-btn" aria-label="Close" title="Close" @click="close">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
       </header>
 
-      <div class="hh-panel-messages">
+      <div class="hh-panel-messages" ref="messagesEl">
+        <!-- Empty state with quick prompts -->
+        <div v-if="!(messages as ChatMessage[]).length && !isLoading" class="hh-empty-state">
+          <div class="hh-empty-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="32" height="32"><path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/></svg>
+          </div>
+          <p class="hh-empty-hint">How can I help you today?</p>
+          <div v-if="config?.quickPrompts?.length" class="hh-quick-prompts">
+            <button
+              v-for="(qp, i) in config.quickPrompts"
+              :key="i"
+              class="hh-quick-prompt-btn"
+              @click="sendQuickPrompt(qp.text)"
+            >
+              <span v-if="qp.icon" class="hh-quick-prompt-icon">{{ qp.icon }}</span>
+              {{ qp.label }}
+            </button>
+          </div>
+        </div>
+
         <div
           v-for="msg in (messages as ChatMessage[])"
           :key="msg.id"
@@ -90,7 +139,7 @@ function blockComponent(type: string) {
           :disabled="!inputText.trim() || (isLoading as boolean)"
           @click="handleSend"
         >
-          Send
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="m22 2-11 11M22 2 15 22l-4-9-9-4 20-7z"/></svg>
         </button>
       </footer>
     </div>
@@ -103,53 +152,145 @@ function blockComponent(type: string) {
   bottom: 92px;
   right: 24px;
   z-index: 9999;
-  width: 360px;
-  max-height: 560px;
+  width: 380px;
+  max-height: 580px;
   display: flex;
   flex-direction: column;
   background: #fff;
   border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.16);
-  font-family: system-ui, sans-serif;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.18);
+  font-family: system-ui, -apple-system, sans-serif;
   font-size: 14px;
   overflow: hidden;
+  transition: width 0.25s ease, height 0.25s ease, bottom 0.25s ease, right 0.25s ease, border-radius 0.25s ease, max-height 0.25s ease;
+}
+
+.hh-panel--fullscreen {
+  bottom: 0;
+  right: 0;
+  width: 100vw;
+  max-height: 100dvh;
+  height: 100dvh;
+  border-radius: 0;
 }
 
 .hh-panel-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 16px;
+  padding: 13px 16px;
   background: #f97316;
   color: #fff;
   font-weight: 600;
-  font-size: 15px;
+  font-size: 14px;
+  flex-shrink: 0;
 }
 
-.hh-panel-close {
+.hh-panel-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.hh-panel-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.hh-panel-icon-btn {
   background: transparent;
   border: none;
-  color: #fff;
+  color: rgba(255,255,255,0.85);
   cursor: pointer;
-  font-size: 18px;
-  line-height: 1;
-  padding: 0 4px;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+
+.hh-panel-icon-btn:hover {
+  background: rgba(255,255,255,0.2);
+  color: #fff;
 }
 
 .hh-panel-messages {
   flex: 1;
   overflow-y: auto;
-  padding: 12px;
+  padding: 16px 12px;
   display: flex;
   flex-direction: column;
   gap: 10px;
   background: #f9fafb;
 }
 
+/* Empty state */
+.hh-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 8px 8px;
+  gap: 12px;
+}
+
+.hh-empty-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #fff7ed;
+  color: #f97316;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hh-empty-hint {
+  margin: 0;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.hh-quick-prompts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  width: 100%;
+}
+
+.hh-quick-prompt-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff;
+  border: 1.5px solid #f97316;
+  color: #f97316;
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  font-family: inherit;
+}
+
+.hh-quick-prompt-btn:hover {
+  background: #f97316;
+  color: #fff;
+}
+
+.hh-quick-prompt-icon {
+  font-size: 15px;
+}
+
+/* Messages */
 .hh-message {
-  max-width: 92%;
+  max-width: 88%;
   padding: 10px 12px;
-  border-radius: 10px;
+  border-radius: 12px;
   line-height: 1.5;
 }
 
@@ -157,6 +298,7 @@ function blockComponent(type: string) {
   align-self: flex-end;
   background: #f97316;
   color: #fff;
+  border-radius: 12px 12px 4px 12px;
 }
 
 .hh-message[data-role="assistant"] {
@@ -164,10 +306,11 @@ function blockComponent(type: string) {
   background: #fff;
   border: 1px solid #e5e7eb;
   color: #111827;
+  border-radius: 12px 12px 12px 4px;
 }
 
 .hh-message-text {
-  margin: 0 0 6px;
+  margin: 0 0 4px;
 }
 
 .hh-message-loading {
@@ -175,6 +318,8 @@ function blockComponent(type: string) {
   gap: 5px;
   align-items: center;
   padding: 12px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
 }
 
 .hh-loading-dot {
@@ -193,24 +338,28 @@ function blockComponent(type: string) {
   40% { transform: scale(1); opacity: 1; }
 }
 
+/* Footer */
 .hh-panel-footer {
   display: flex;
+  align-items: flex-end;
   gap: 8px;
   padding: 10px 12px;
   border-top: 1px solid #e5e7eb;
   background: #fff;
+  flex-shrink: 0;
 }
 
 .hh-input {
   flex: 1;
   resize: none;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 10px;
   padding: 8px 10px;
   font-size: 13px;
   font-family: inherit;
   outline: none;
   transition: border-color 0.15s;
+  line-height: 1.5;
 }
 
 .hh-input:focus {
@@ -221,10 +370,14 @@ function blockComponent(type: string) {
   background: #f97316;
   color: #fff;
   border: none;
-  border-radius: 8px;
-  padding: 0 16px;
-  font-weight: 600;
+  border-radius: 10px;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
+  flex-shrink: 0;
   transition: background 0.15s;
 }
 
